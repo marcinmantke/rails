@@ -1,0 +1,33 @@
+version: '2'
+
+services:
+  db:
+    image: postgres:9.6.1 # reuse postgres container
+    volumes:
+      - /var/lib/postgresql/data
+
+  web:
+    build:
+      dockerfile: Dockerfile
+      context: .
+    ports:
+      - 3000:3000
+    volumes:
+      - .:/app
+    links:
+      - db
+    depends_on:
+      - db
+    command: bundle exec rails s -b 0.0.0.0
+    environment:
+      - REDIS_URL=redis://redis:6379
+      - DATABASE_URL=postgres://postgres@db:5432
+    volumes_from:
+      - bundle
+
+
+  bundle:
+    image: busybox
+    command: echo "I'm a little data container, short and stout..."
+    volumes:
+      - /bundle
